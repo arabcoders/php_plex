@@ -1,0 +1,20 @@
+[Unit]
+Description=Rclone cache watcher for plex
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+Environment=PP_SCANNER_ENV_LD=/usr/lib/plexmediaserver/lib
+Environment=PP_SCANNER_ENV_DIR="/var/lib/plexmediaserver/Library/Application Support"
+Environment=PP_PLEX_TOKEN=YourPlexToken
+Environment=PP_LOG_LOCATION=/var/log/rclone.log
+ExecStart=/opt/PHPPlex run -v
+Restart=always
+User=plex
+Group=plex
+StandardOutput=syslog+console
+StandardError=syslog+console
+
+[Install]
+WantedBy=multi-user.target
