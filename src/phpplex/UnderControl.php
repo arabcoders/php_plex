@@ -23,9 +23,15 @@ class UnderControl
         $this->locations = $locations;
     }
 
-    public function isMatch(\SplFileObject $file): bool
+    /**
+     * Check File path.
+     *
+     * @param string|\SplFileObject $file
+     * @return bool
+     */
+    public function isMatch($file): bool
     {
-        $filePath = $file->getPath();
+        $filePath = $file instanceof \SplFileObject ? $file->getPath() : $file;
 
         foreach ($this->locations as $path) {
 

@@ -202,53 +202,55 @@ class Run extends Command
             return;
         }
 
-        $allow = $this->allow->run($match->getFirst());
+        // -- matched file or dir.
+        $_file = $match->getFirst();
 
-        if (!$allow->isFound()) {
-
+        if ($this->exclude->run($_file)->isFound()) {
             $this->output->writeln(
-                '<e>Not whitelisted in allowed files_allow</e> -' . $allow->getLine(),
+                '<e>File is excluded in files_exclude</e> -' . $this->exclude->getLine(),
                 OutputInterface::VERBOSITY_VERY_VERBOSE
             );
 
             return;
         }
 
-        $exclude = $this->exclude->run($match->getFirst());
+        $this->output->writeln('<s>' . $_file . '</s>', OutputInterface::VERBOSITY_DEBUG);
 
-        if ($exclude->isFound()) {
-            $this->output->writeln(
-                '<e>File is excluded in files_exclude</e> -' . $exclude->getLine(),
-                OutputInterface::VERBOSITY_VERY_VERBOSE
-            );
+        $filePath = $this->mediaPath . $_file;
 
-            return;
+        $msg = '<s>' . $this->underControl->getSection() . ' : ' . $this->underControl->getDirectory() . '</s>';
+
+        if (is_file($filePath)) {
+
+            if (!$this->allow->run($_file)->isFound()) {
+
+                $this->output->writeln(
+                    '<e>Not whitelisted in allowed files_allow</e> -' . $this->allow->run($_file)->getLine(),
+                    OutputInterface::VERBOSITY_VERY_VERBOSE
+                );
+
+                return;
+            }
+
+            $file = new \SplFileObject($filePath);
+            $msg = '/' . $file->getFilename();
+
+        } else {
+
+            $file = $filePath;
+
         }
-
-        $this->output->writeln('<s>' . $match->getFirst() . '</s>', OutputInterface::VERBOSITY_DEBUG);
-
-        $filePath = $this->mediaPath . $match->getFirst();
-
-        if (!is_file($filePath)) {
-            $this->output->writeln('<e>Detected \'%s\' as valid match, but it\'s not file.</e>',
-                OutputInterface::VERBOSITY_VERBOSE);
-            return;
-        }
-
-        $file = new \SplFileObject($filePath);
 
         if (!$this->underControl->isMatch($file)) {
             $this->output->writeln(
-                '<e>File is Not Under Control</e> -' . $exclude->getLine(),
+                '<e>File/dir is Not Under Control</e> -' . $filePath,
                 OutputInterface::VERBOSITY_VERY_VERBOSE
             );
 
             return;
         }
 
-        $this->output->writeln(
-            '<s>' . $this->underControl->getSection() . ':' . $this->underControl->getDirectory() . '</s>/' . $file->getFilename(),
-            OutputInterface::VERBOSITY_VERBOSE);
+        $this->output->writeln($msg, OutputInterface::VERBOSITY_VERBOSE);
 
         $this->executeSubCommand('scan', [
             'section' => $this->underControl->getSection(),

@@ -18,7 +18,7 @@ use Symfony\Component\Console\Application;
 class PHPPlex extends Application
 {
     private const APP_NAME = 'PHPPlex';
-    private const VERSION = '1.0.0-RC';
+    private const VERSION = '1.1.0';
     protected $config = [];
 
     public function __construct(array $config)
